@@ -1,3 +1,5 @@
+from examples import create_test_boards
+
 class BacktrackSolver:
     def __init__(self, board):
         self.board = board
@@ -19,10 +21,7 @@ class BacktrackSolver:
             return False
         
         # Check for queens in adjacent diagonal positions (within 1 block)
-        diagonal_adjacents = [
-            (row-1, col-1), (row-1, col+1),
-            (row+1, col-1), (row+1, col+1)
-        ]
+        diagonal_adjacents = [(row-1, col-1), (row-1, col+1), (row+1, col-1), (row+1, col+1)]
         
         for adj_row, adj_col in diagonal_adjacents:
             # Check if position is valid and contains a queen
@@ -61,7 +60,7 @@ class BacktrackSolver:
         
         return False
     
-    def solve_queens(self, board):
+    def solve(self, board):
         """
         Solves the LinkedIn Queens puzzle using backtracking.
         
@@ -72,7 +71,8 @@ class BacktrackSolver:
             A solution matrix where 1 represents a queen and 0 represents an empty cell.
             None if no solution exists.
         """
-        # Start the backtracking process
+
+        print("Solving the queens puzzle with backtracking...")
         if self.backtrack(0):
             return self.solution
         else:
@@ -87,24 +87,10 @@ class BacktrackSolver:
         for row in self.solution:
             print(' '.join('Q' if cell == 1 else '.' for cell in row))
 
-def create_test_board():
-    """
-    Creates a sample board.
-    """
-    board = [
-        [0, 0, 1, 0, 0, 2, 2],
-        [0, 0, 1, 0, 0, 2, 2],
-        [0, 0, 0, 0, 0, 3, 2],
-        [0, 0, 3, 3, 3, 3, 2],
-        [0, 5, 5, 5, 3, 3, 2],
-        [0, 5, 5, 5, 6, 3, 3],
-        [7, 7, 7, 7, 6, 3, 3],
-    ]
-    return board
-
 if __name__ == "__main__":
-    test_board = create_test_board()
-    solver = BacktrackSolver(test_board)
-    solution = solver.solve_queens(test_board)
-    solver.print_solution()
+    test_boards = create_test_boards()
+    for test_board in test_boards:
+        solver = BacktrackSolver(test_board)
+        solution = solver.solve(test_board)
+        solver.print_solution()
     
