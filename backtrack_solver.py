@@ -5,7 +5,7 @@ class BacktrackSolver:
         self.board = board
         self.n = len(board)
         self.solution = [[0 for _ in range(self.n)] for _ in range(self.n)]
-        self.regions_used = [False] * 9
+        self.regions_used = [False] * self.n
         self.rows_used = [False] * self.n
         self.cols_used = [False] * self.n
 
@@ -60,7 +60,7 @@ class BacktrackSolver:
         
         return False
     
-    def solve(self, board):
+    def solve(self):
         """
         Solves the LinkedIn Queens puzzle using backtracking.
         
@@ -91,6 +91,6 @@ if __name__ == "__main__":
     test_boards = create_test_boards()
     for test_board in test_boards:
         solver = BacktrackSolver(test_board)
-        solution = solver.solve(test_board)
+        solution = solver.solve()
         solver.print_solution()
     

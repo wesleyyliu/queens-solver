@@ -81,6 +81,7 @@ class PycosatSolver:
         
         print("Solving queens puzzle with pycosat...")
 
+        self.clauses = []
         self.add_queen_constraints()
         self.add_region_constraints()
         self.add_diagonal_adjacency_constraints()
@@ -97,6 +98,24 @@ class PycosatSolver:
                 self.solution[row][col] = 1
         
         return self.solution
+
+    def has_one_solution(self):
+        """Return True if the queens puzzle has exactly one solution"""
+        self.clauses = []
+        self.add_queen_constraints()
+        self.add_region_constraints()
+        self.add_diagonal_adjacency_constraints()
+        
+        iter = pycosat.itersolve(self.clauses)
+        try:
+            next(iter)
+        except:
+            return False
+        try:
+            next(iter)
+            return False
+        except:
+            return True
     
     def print_solution(self):
         """Pretty print the final solution"""
