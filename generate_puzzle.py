@@ -17,8 +17,8 @@ def generate_puzzle(n=9, max_changes=1000):
     board = create_start_board(n)
 
     # Solve the puzzle and change cells until we get a valid board with one solution
-    solver = PycosatSolver(board)
-    count = 0
+    solver = PycosatSolver(board, use_heuristic=True)
+    changes_count = 0
     while not solver.has_one_solution():
         # Randomly iterate through cells until we find a boundary cell, then flip the region assignment
         all_cells = [(row, col) for row in range(n) for col in range(n)]
@@ -44,17 +44,16 @@ def generate_puzzle(n=9, max_changes=1000):
             if found_boundary:
                 break
 
-        count += 1
-        if count % 1000 == 0:
-            print(count)
+        changes_count += 1
 
         # Reroll the start board if we've been trying for too long, or if no boundary changes are possible
-        if not found_boundary or count > max_changes:
+        if not found_boundary or changes_count > max_changes:
             board = create_start_board(n)
-            count = 0
+            changes_count = 0
+            print("Rerolling start board")
 
-        solver = PycosatSolver(board)
-    
+        solver = PycosatSolver(board, use_heuristic=True)
+    print(f"Puzzle generated in {changes_count} changes")
     return board
 
 def create_start_board(n=9):
@@ -213,15 +212,15 @@ def generate_multiple_puzzles(n=9, num_puzzles=100, max_changes=10000, output_di
 
     # Generate and save puzzles
     puzzles = [generate_puzzle(n, max_changes) for _ in range(num_puzzles)]
-    with open(f'{output_dir}/size_{n}.txt', 'w') as f:
+    with open(f'{output_dir}/size_{n}.txt', 'a') as f:
         for i, puzzle in enumerate(puzzles):
             f.write(convert_board_to_txt_line(puzzle) + '\n')
 
     print(f"Generated {num_puzzles} puzzles of size {n}x{n}")
 
 if __name__ == "__main__":
-    for n in range(7, 9):
-        generate_multiple_puzzles(n, 500, 3000)
+    for n in range(5, 11):
+        generate_multiple_puzzles(n, 2500, 200)
 
     # # Generate a puzzle
     # board = generate_puzzle(n=11, max_changes=10000)

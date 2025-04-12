@@ -45,7 +45,7 @@ def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None, num_samples=50):
             print(f"No puzzles found for size {size}. Skipping.")
             continue
             
-        with open(puzzle_file, 'r') as f:
+        with open(puzzle_file, "r") as f:
             puzzle_lines = f.readlines()
         
         # Sample puzzles randomly if we exceed the number of samples we want to look at
@@ -58,18 +58,26 @@ def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None, num_samples=50):
             
             times = {}
             
+            solutions = []
+
             # Compute solve time
             for solver_name, solver_class in solvers.items():
                 solver = solver_class(board)
                 start_time = time.time()
-                solver.solve()
+                solution = solver.solve()
                 solve_time = time.time() - start_time
                 results[solver_name][size].append(solve_time)
                 times[solver_name] = solve_time
+                solutions.append(solution)
+
+            # Check all pairs of solutions and make sure they are the same
+            for solution in solutions:
+                for other_solution in solutions:
+                    assert solution == other_solution
             
             # Get times for each solver and print it out for each puzzle
             time_strings = [f"{name}: {time:.4f}s" for name, time in times.items()]
-            print(f"  Puzzle {i+1}/{len(puzzle_lines)}: {', '.join(time_strings)}")
+            print(f"  Puzzle {i+1}/{len(puzzle_lines)}: {", ".join(time_strings)}")
     
     return results
 
@@ -85,33 +93,81 @@ def plot_execution_time_vs_size(results):
         avg_times = [np.mean(results[solver_name][size]) for size in sizes]
         std_times = [np.std(results[solver_name][size]) for size in sizes]
         
-        plt.errorbar(sizes, avg_times, yerr=std_times, fmt='o-', label=solver_name)
+        plt.errorbar(sizes, avg_times, yerr=std_times, fmt="o-", label=solver_name)
     
-    plt.xlabel('Puzzle Size (n × n)')
-    plt.ylabel('Average Execution Time (seconds)')
-    plt.title('Solver Performance vs Puzzle Size')
+    plt.xlabel("Puzzle Size (n × n)")
+    plt.ylabel("Average Execution Time (seconds)")
+    plt.title("Solver Performance vs Puzzle Size")
     plt.legend()
     plt.grid(True)
     
     # Use log scale if max time >= 10x min time
     all_times = [time for solver in solver_names for size in sizes for time in results[solver][size]]
     if max(all_times) / max(0.000001, min(all_times)) > 10:
-        plt.yscale('log')
-        plt.title('Solver Performance vs Puzzle Size (Log Scale)')
+        plt.yscale("log")
+        plt.title("Solver Performance vs Puzzle Size (Log Scale)")
     
     plt.tight_layout()
-    plt.savefig('execution_time_vs_size.png')
+    # Output directory
+    os.makedirs("figs", exist_ok=True)
+    plt.savefig("figs/execution_time_vs_size.png")
+    plt.close()
+
+
+def plot_execution_time_difference(results, solver1, solver2):
+    """
+    Plot runtime difference between two solvers
+    
+    Args:
+        results: Dictionary with results from evaluate_solvers
+        solver1: First solver name
+        solver2: Second solver name
+    """
+    sizes = results["sizes"]
+    
+    if solver1 not in results or solver2 not in results:
+        print(f"Error: One solver missing from results")
+        return
+    
+    plt.figure(figsize=(10, 6))
+    
+    differences = []
+    std_diffs = []
+    
+    for size in sizes:
+        diffs = [results[solver2][size][i] - results[solver1][size][i] 
+                for i in range(len(results[solver1][size]))]
+        
+        differences.append(np.mean(diffs))
+        std_diffs.append(np.std(diffs))
+    
+    # Create bar chart
+    plt.bar(sizes, differences, yerr=std_diffs, alpha=0.7)
+    
+    # Baseline 0 horizontal line
+    plt.axhline(y=0, color="r", linestyle="-", alpha=0.3)
+    
+    plt.xlabel("Puzzle Size (n × n)")
+    plt.ylabel(f"Time Difference: {solver2} - {solver1} (seconds)")
+    plt.title(f"Runtime Difference: {solver2} vs {solver1}")
+    plt.grid(True, axis="y", alpha=0.3)
+    
+    plt.tight_layout()
+    # Output directory
+    os.makedirs("figs", exist_ok=True)
+    plt.savefig(f"figs/solver_difference_{solver1}_vs_{solver2}.png")
     plt.close()
 
 if __name__ == "__main__":
     solvers = {
         "PycosatSolver": PycosatSolver,
-        "BacktrackSolver": BacktrackSolver,
+        # "BacktrackSolver": BacktrackSolver,
+        "PycosatSolver (with heuristics)": lambda board: PycosatSolver(board, use_heuristic=True),
     }
     
-    results = evaluate_solvers(solvers, sizes=list(range(5,8)), num_samples=500)
+    results = evaluate_solvers(solvers, sizes=list(range(5,15)), num_samples=500)
     
     # Create visualizations
     plot_execution_time_vs_size(results)
-    
+    plot_execution_time_difference(results, "PycosatSolver", "PycosatSolver (with heuristics)")
     print("Evaluation done.")

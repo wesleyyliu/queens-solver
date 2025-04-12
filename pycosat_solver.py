@@ -2,11 +2,12 @@ import pycosat
 from examples import create_test_boards
 
 class PycosatSolver:
-    def __init__(self, board):
+    def __init__(self, board, use_heuristic=False):
         self.board = board
         self.n = len(board)
         self.clauses = []
         self.solution = None
+        self.use_heuristic = use_heuristic
 
     def var_index(self, row, col):
         """Convert row, col position to corresponding variable index (1-based in pycosat)"""
@@ -75,6 +76,58 @@ class PycosatSolver:
                     if 0 <= d_row < self.n and 0 <= d_col < self.n:
                         # <= 1 queen in diagonal
                         self.clauses.append([-self.var_index(row, col), -self.var_index(d_row, d_col)])
+
+    def add_heuristic_constraints(self):
+        """Add extra heuristic constraints to possibly speed up solver"""
+
+        region_positions = {}
+        regions_rows = [set() for _ in range(self.n)]
+        regions_cols = [set() for _ in range(self.n)]
+
+        for row in range(self.n):
+            for col in range(self.n):
+                region = self.board[row][col]
+                if region not in region_positions:
+                    region_positions[region] = []
+                region_positions[region].append((row, col))
+                regions_rows[region].add(row)
+                regions_cols[region].add(col)
+        
+        # If there is only one position for a region, just make it a queen
+        for region in region_positions:
+            positions = region_positions[region]
+            if len(positions) == 1:
+                row, col = positions[0]
+                self.clauses.append([self.var_index(row, col)])
+
+        for region in range(self.n):
+            if len(regions_rows[region]) == 1:
+                # should just be one row
+                for row in regions_rows[region]:
+                    for col in range(self.n):
+                        # For cells in this row not in the same region, add negative constraint
+                        if self.board[row][col] != region:
+                            self.clauses.append([-self.var_index(row, col)])
+            if len(regions_cols[region]) == 1:
+                # should just be one col
+                for col in regions_cols[region]:
+                    for row in range(self.n):
+                        # For cells in this col not in the same region, add negative constraint
+                        if self.board[row][col] != region:
+                            self.clauses.append([-self.var_index(row, col)])
+
+
+        for r1 in range(self.n):
+            for r2 in range(r1 + 1, self.n):
+                s1 = regions_rows[r1]
+                s2 = regions_rows[r2]
+                if len(s1) == 2 and len(s2) == 2 and s1 == s2:
+                    # Add negative constraints for all cells in these two rows that are not in r1 or r2
+                    for row in s1:
+                        for col in range(self.n):
+                            current_region = self.board[row][col]
+                            if current_region != r1 and current_region != r2:
+                                self.clauses.append([-self.var_index(row, col)])
     
     def solve(self):
         """Set up constraints and solve queens yay"""
@@ -85,6 +138,8 @@ class PycosatSolver:
         self.add_queen_constraints()
         self.add_region_constraints()
         self.add_diagonal_adjacency_constraints()
+        if self.use_heuristic:
+            self.add_heuristic_constraints()
         
         # All true literals returned
         result = pycosat.solve(self.clauses)
@@ -105,6 +160,8 @@ class PycosatSolver:
         self.add_queen_constraints()
         self.add_region_constraints()
         self.add_diagonal_adjacency_constraints()
+        if self.use_heuristic:
+            self.add_heuristic_constraints()
         
         iter = pycosat.itersolve(self.clauses)
         try:
