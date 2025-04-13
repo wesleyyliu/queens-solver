@@ -128,11 +128,33 @@ class PycosatSolver:
                             current_region = self.board[row][col]
                             if current_region != r1 and current_region != r2:
                                 self.clauses.append([-self.var_index(row, col)])
+                
+                s1 = regions_cols[r1]
+                s2 = regions_cols[r2]
+                if len(s1) == 2 and len(s2) == 2 and s1 == s2:
+                    # Add negative constraints for all cells in these two cols that are not in r1 or r2
+                    for col in s1:
+                        for row in range(self.n):
+                            current_region = self.board[row][col]
+                            if current_region != r1 and current_region != r2:
+                                self.clauses.append([-self.var_index(row, col)])
+        
+        # for r1 in range(self.n):
+        #     for r2 in range(r1 + 1, self.n):
+        #         for r3 in range(r2 + 1, self.n):
+        #             s1 = regions_rows[r1]
+        #             s2 = regions_rows[r2]
+        #             s3 = regions_rows[r3]
+        #             if len(s1) == 3 and len(s2) == 3 and len(s3) == 3 and s1 == s2 and s1 == s3:
+        #                 # Add negative constraints for all cells in these two rows that are not in r1 or r2 or r3
+        #                 for row in s1:
+        #                     for col in range(self.n):
+        #                         current_region = self.board[row][col]
+        #                         if current_region != r1 and current_region != r2 and current_region != r3:
+        #                             self.clauses.append([-self.var_index(row, col)])
     
     def solve(self):
         """Set up constraints and solve queens yay"""
-        
-        print("Solving queens puzzle with pycosat...")
 
         self.clauses = []
         self.add_queen_constraints()

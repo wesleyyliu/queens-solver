@@ -6,7 +6,7 @@ from pycosat_solver import PycosatSolver
 from backtrack_solver import BacktrackSolver
 from generate_puzzle import convert_txt_line_to_board
 
-def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None, num_samples=50):
+def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None):
     """
     Benchmark solvers on puzzles of different sizes.
     
@@ -47,10 +47,6 @@ def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None, num_samples=50):
             
         with open(puzzle_file, "r") as f:
             puzzle_lines = f.readlines()
-        
-        # Sample puzzles randomly if we exceed the number of samples we want to look at
-        if len(puzzle_lines) > num_samples:
-            puzzle_lines = np.random.choice(puzzle_lines, num_samples, replace=False)
         
         # Run solver on puzzle
         for i, line in enumerate(puzzle_lines):
@@ -159,13 +155,14 @@ def plot_execution_time_difference(results, solver1, solver2):
     plt.close()
 
 if __name__ == "__main__":
+    np.random.seed(42)
     solvers = {
         "PycosatSolver": PycosatSolver,
         # "BacktrackSolver": BacktrackSolver,
         "PycosatSolver (with heuristics)": lambda board: PycosatSolver(board, use_heuristic=True),
     }
     
-    results = evaluate_solvers(solvers, sizes=list(range(5,15)), num_samples=500)
+    results = evaluate_solvers(solvers, sizes=list(range(5,16)))
     
     # Create visualizations
     plot_execution_time_vs_size(results)
