@@ -219,8 +219,8 @@ def generate_multiple_puzzles(n=9, num_puzzles=100, max_changes=10000, output_di
     print(f"Generated {num_puzzles} puzzles of size {n}x{n}")
 
 if __name__ == "__main__":
-    for n in range(5, 11):
-        generate_multiple_puzzles(n, 2500, 200)
+    for n in range(16, 18):
+        generate_multiple_puzzles(n, 100, 500)
 
     # # Generate a puzzle
     # board = generate_puzzle(n=11, max_changes=10000)
