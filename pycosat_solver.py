@@ -152,6 +152,31 @@ class PycosatSolver:
         #                         current_region = self.board[row][col]
         #                         if current_region != r1 and current_region != r2 and current_region != r3:
         #                             self.clauses.append([-self.var_index(row, col)])
+
+        # # Look at all eliminated cells from placing a queen, and make sure that a region is not completely eliminated
+        # for r1 in range(self.n):
+        #     for c1 in range(self.n):
+        #         # attempt placing a queen here
+        #         eliminated_region_position_counts = {}
+        #         for r2 in range(self.n):
+        #             if r1 != r2:
+        #                 eliminated_region_position_counts[self.board[r2][c1]] = eliminated_region_position_counts.get(self.board[r2][c1], 0) + 1
+
+        #         for c2 in range(self.n):
+        #             if c1 != c2:
+        #                 eliminated_region_position_counts[self.board[r1][c2]] = eliminated_region_position_counts.get(self.board[r1][c2], 0) + 1
+
+        #         diagonals = [(r1-1, c1-1), (r1-1, c1+1), (r1+1, c1-1), (r1+1, c1+1)]
+
+        #         for d_row, d_col in diagonals:
+        #             if 0 <= d_row < self.n and 0 <= d_col < self.n:
+        #                 eliminated_region_position_counts[self.board[d_row][d_col]] = eliminated_region_position_counts.get(self.board[d_row][d_col], 0) + 1
+
+        #         for region in eliminated_region_position_counts:
+        #             # If a region is completely eliminated, add a negative constraint
+        #             if eliminated_region_position_counts[region] == len(region_positions[region]):
+        #                 self.clauses.append([-self.var_index(r1, c1)])
+                
     
     def solve(self):
         """Set up constraints and solve queens yay"""

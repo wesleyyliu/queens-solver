@@ -219,26 +219,23 @@ def generate_multiple_puzzles(n=9, num_puzzles=100, max_changes=10000, output_di
     print(f"Generated {num_puzzles} puzzles of size {n}x{n}")
 
 if __name__ == "__main__":
-    for n in range(16, 18):
-        generate_multiple_puzzles(n, 100, 500)
+    # for n in range(16, 18):
+    #     generate_multiple_puzzles(n, 100, 500)
 
-    # # Generate a puzzle
-    # board = generate_puzzle(n=11, max_changes=10000)
-    # assert board == convert_txt_line_to_board(convert_board_to_txt_line(board))
-    # print_solution(board)
+    # Generate a puzzle
+    board = generate_puzzle(n=9, max_changes=1000)
+    assert board == convert_txt_line_to_board(convert_board_to_txt_line(board))
+    print_solution(board)
     
-    # # Visualize the board
-    # visualize_board(board)
-    
-    # # Verify using the solver
-    # print("\nVerifying with PycosatSolver:")
-    # pycosat_solver = PycosatSolver(board)
-    # pycosat_solution = pycosat_solver.solve()
-    # if pycosat_solution:
-    #     pycosat_solver.print_solution()
-    # else:
-    #     print("No solution found by PycosatSolver. The puzzle may be invalid.")
-    # print("\nVerifying with BacktrackSolver:")
+    # Verify using the solver
+    print("\nVerifying with PycosatSolver:")
+    pycosat_solver = PycosatSolver(board)
+    pycosat_solution = pycosat_solver.solve()
+    if pycosat_solution:
+        pycosat_solver.print_solution()
+    else:
+        print("No solution found by PycosatSolver. The puzzle may be invalid.")
+    print("\nVerifying with BacktrackSolver:")
     # backtrack_solver = BacktrackSolver(board)
     # backtrack_solution = backtrack_solver.solve()
     # if backtrack_solution:
@@ -246,3 +243,6 @@ if __name__ == "__main__":
     # else:
     #     print("No solution found by BacktrackSolver. The puzzle may be invalid.")
     # assert(pycosat_solution == backtrack_solution)
+
+    # Visualize the board
+    visualize_board(board)
