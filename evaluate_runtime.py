@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 from pycosat_solver import PycosatSolver
+from cpsat_solver import CpSatSolver
 from backtrack_solver import BacktrackSolver
 from generate_puzzle import convert_txt_line_to_board
 
@@ -67,13 +68,26 @@ def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None):
                 solutions.append(solution)
 
             # Check all pairs of solutions and make sure they are the same
-            for solution in solutions:
-                for other_solution in solutions:
+            for j, solution in enumerate(solutions):
+                for k, other_solution in enumerate(solutions):
+                    if solution != other_solution:
+                        print("\n--- MISMATCH DETECTED ---")
+                        print(f"Puzzle index: {i+1}")
+                        print("Board:")
+                        for row in board:
+                            print(row)
+                        print(f"Solution from {list(solvers.keys())[j]}:")
+                        for row in solution or []:
+                            print(row)
+                        print(f"Solution from {list(solvers.keys())[k]}:")
+                        for row in other_solution or []:
+                            print(row)
+                        print(f"Times: {times}")
                     assert solution == other_solution
             
             # Get times for each solver and print it out for each puzzle
             time_strings = [f"{name}: {time:.4f}s" for name, time in times.items()]
-            print(f"  Puzzle {i+1}/{len(puzzle_lines)}: {", ".join(time_strings)}")
+            print(f"  Puzzle {i+1}/{len(puzzle_lines)}: {', '.join(time_strings)}")
     
     return results
 
@@ -158,13 +172,17 @@ if __name__ == "__main__":
     np.random.seed(42)
     solvers = {
         "PycosatSolver": PycosatSolver,
-        # "BacktrackSolver": BacktrackSolver,
         "PycosatSolver (with heuristics)": lambda board: PycosatSolver(board, use_heuristic=True),
+        "CpSatSolver": CpSatSolver,
+        "CpSatSolver (with heuristics)": lambda board: CpSatSolver(board, use_heuristic=True)
     }
     
     results = evaluate_solvers(solvers, sizes=list(range(5,16)))
     
     # Create visualizations
     plot_execution_time_vs_size(results)
-    plot_execution_time_difference(results, "PycosatSolver", "PycosatSolver (with heuristics)")
+    solver_names = list(solvers.keys())
+    for i, solver1 in enumerate(solver_names):
+        for solver2 in solver_names[i+1:]:
+            plot_execution_time_difference(results, solver1, solver2)
     print("Evaluation done.")
