@@ -223,7 +223,7 @@ if __name__ == "__main__":
     #     generate_multiple_puzzles(n, 100, 500)
 
     # Generate a puzzle
-    board = generate_puzzle(n=9, max_changes=1000)
+    board = generate_puzzle(n=6, max_changes=1000)
     assert board == convert_txt_line_to_board(convert_board_to_txt_line(board))
     print_solution(board)
     
