@@ -91,7 +91,7 @@ def evaluate_solvers(solvers, puzzle_dir="puzzles", sizes=None):
     
     return results
 
-def plot_execution_time_vs_size(results):
+def plot_execution_time_vs_size(results, log_scale=False):
     """Plot average execution time vs puzzle size for all solvers"""
     sizes = results["sizes"]
     solver_names = [key for key in results.keys() if key != "sizes"]
@@ -113,20 +113,20 @@ def plot_execution_time_vs_size(results):
     
     # Use log scale if max time >= 10x min time
     all_times = [time for solver in solver_names for size in sizes for time in results[solver][size]]
-    if max(all_times) / max(0.000001, min(all_times)) > 10:
+    if log_scale and max(all_times) / max(0.000001, min(all_times)) > 10:
         plt.yscale("log")
         plt.title("Solver Performance vs Puzzle Size (Log Scale)")
     
     plt.tight_layout()
     # Output directory
     os.makedirs("figs", exist_ok=True)
-    plt.savefig("figs/execution_time_vs_size.png")
+    plt.savefig("figs/execution_time_vs_size.png" if not log_scale else "figs/execution_time_vs_size_log.png")
     plt.close()
 
 
-def plot_execution_time_difference(results, solver1, solver2):
+def plot_execution_time_percentage_difference(results, solver1, solver2):
     """
-    Plot runtime difference between two solvers
+    Plot runtime percentage difference between two solvers
     
     Args:
         results: Dictionary with results from evaluate_solvers
@@ -141,25 +141,26 @@ def plot_execution_time_difference(results, solver1, solver2):
     
     plt.figure(figsize=(10, 6))
     
-    differences = []
-    std_diffs = []
+    percentage_diffs = []
+    std_percentage_diffs = []
     
     for size in sizes:
-        diffs = [results[solver2][size][i] - results[solver1][size][i] 
-                for i in range(len(results[solver1][size]))]
+        # Calculate percentage differences
+        perc_diffs = [(results[solver2][size][i] - results[solver1][size][i]) / max(results[solver1][size][i], 1e-6) * 100 
+                    for i in range(len(results[solver1][size]))]
         
-        differences.append(np.mean(diffs))
-        std_diffs.append(np.std(diffs))
+        percentage_diffs.append(np.mean(perc_diffs))
+        std_percentage_diffs.append(np.std(perc_diffs))
     
     # Create bar chart
-    plt.bar(sizes, differences, yerr=std_diffs, alpha=0.7)
+    plt.bar(sizes, percentage_diffs, yerr=std_percentage_diffs, alpha=0.7)
     
     # Baseline 0 horizontal line
     plt.axhline(y=0, color="r", linestyle="-", alpha=0.3)
     
     plt.xlabel("Puzzle Size (n × n)")
-    plt.ylabel(f"Time Difference: {solver2} - {solver1} (seconds)")
-    plt.title(f"Runtime Difference: {solver2} vs {solver1}")
+    plt.ylabel(f"Time Difference: ({solver2} - {solver1}) / {solver1} (%)")
+    plt.title(f"Runtime Percentage Difference: {solver2} vs {solver1}")
     plt.grid(True, axis="y", alpha=0.3)
     
     plt.tight_layout()
@@ -180,9 +181,10 @@ if __name__ == "__main__":
     results = evaluate_solvers(solvers, sizes=list(range(5,16)))
     
     # Create visualizations
-    plot_execution_time_vs_size(results)
+    plot_execution_time_vs_size(results, log_scale=False)
+    plot_execution_time_vs_size(results, log_scale=True)
     solver_names = list(solvers.keys())
     for i, solver1 in enumerate(solver_names):
         for solver2 in solver_names[i+1:]:
-            plot_execution_time_difference(results, solver1, solver2)
+            plot_execution_time_percentage_difference(results, solver1, solver2)
     print("Evaluation done.")
