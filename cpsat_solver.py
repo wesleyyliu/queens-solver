@@ -280,7 +280,7 @@ class CpSatSolver:
         
         solver = cp_model.CpSolver()
         status = solver.Solve(model)
-        if status == cp_model.FEASIBLE or status == cp_model.OPTIMAL:
+        if (status == cp_model.FEASIBLE or status == cp_model.OPTIMAL):
             solution = [[int(solver.Value(x[i][j])) for j in range(n)] for i in range(n)]
             return solution
         else:
@@ -334,5 +334,5 @@ if __name__ == "__main__":
     test_boards = create_test_boards()
     for board in test_boards:
         solver = CpSatSolver(board)
-        solution = solver.solve()
+        solver.solution = solver.solve()
         solver.print_solution()
