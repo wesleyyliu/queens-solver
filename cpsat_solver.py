@@ -331,19 +331,6 @@ class CpSatSolver:
             print(' '.join('Q' if cell == 1 else '.' for cell in row))
 
 if __name__ == "__main__":
-    # Example usage and test
-    # Sample 5x5 board with regions (0-4)
-    # board = [
-    #     [0, 0, 4, 4, 4],
-    #     [0, 0, 4, 3, 2],
-    #     [0, 2, 2, 3, 2],
-    #     [1, 2, 2, 2, 2],
-    #     [2, 2, 2, 2, 2]
-    # ]
-    # solver = CpSatSolver(board)
-    # solution = solver.solve()
-    # print(solution)
-
     test_boards = create_test_boards()
     for board in test_boards:
         solver = CpSatSolver(board)
