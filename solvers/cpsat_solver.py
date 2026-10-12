@@ -1,16 +1,15 @@
 from ortools.sat.python import cp_model
 from examples import create_test_boards
+from solvers.base import QueensSolver
 
-class CpSatSolver:
+class CpSatSolver(QueensSolver):
     def __init__(self, board, use_heuristic=False):
         """
         Initialize the solver with a board
         board: 2D list, board[i][j] gives region number for cell (i, j)
-        use_heuristic:
+        use_heuristic: add deduction constraints and solution hints
         """
-        self.board = board
-        self.n = len(board)
-        self.solution = None
+        super().__init__(board)
         self.use_heuristic = use_heuristic
 
     def add_row_constraints(self, model, x):
@@ -280,11 +279,11 @@ class CpSatSolver:
         
         solver = cp_model.CpSolver()
         status = solver.Solve(model)
-        if (status == cp_model.FEASIBLE or status == cp_model.OPTIMAL):
-            solution = [[int(solver.Value(x[i][j])) for j in range(n)] for i in range(n)]
-            return solution
+        if status in (cp_model.FEASIBLE, cp_model.OPTIMAL):
+            self.solution = [[int(solver.Value(x[i][j])) for j in range(n)] for i in range(n)]
         else:
-            return None
+            self.solution = None
+        return self.solution
 
     def has_one_solution(self):
         """
@@ -321,18 +320,9 @@ class CpSatSolver:
         self.solution = collector.solutions[0] if collector.solutions else None
         return len(collector.solutions) == 1
 
-    def print_solution(self):
-        """Pretty print the final solution"""
-        if self.solution is None:
-            print("No solution exists.")
-            return
-        
-        for row in self.solution:
-            print(' '.join('Q' if cell == 1 else '.' for cell in row))
-
 if __name__ == "__main__":
     test_boards = create_test_boards()
     for board in test_boards:
         solver = CpSatSolver(board)
-        solver.solution = solver.solve()
+        solver.solve()
         solver.print_solution()

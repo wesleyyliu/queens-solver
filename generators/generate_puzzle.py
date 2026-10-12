@@ -1,6 +1,6 @@
 import random
-from pycosat_solver import PycosatSolver
-from backtrack_solver import BacktrackSolver
+from solvers.pycosat_solver import PycosatSolver
+from solvers.backtrack_solver import BacktrackSolver
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import numpy as np
@@ -74,6 +74,8 @@ def create_start_board(n=9):
         if board[row][col] == -1:
             board[row][col] = starting_regions_assigned
             starting_regions_assigned += 1
+            # An earlier seed may have queued this cell; without this, the flood fill overwrites the seed
+            boundaries.discard((row, col))
             # Add adjacent cells to boundaries to be explored later
             adjacent_cells = [(row-1, col), (row, col-1), (row, col+1), (row+1, col)]
             for c_row, c_col in adjacent_cells:

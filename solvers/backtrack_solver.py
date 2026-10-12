@@ -1,9 +1,9 @@
 from examples import create_test_boards
+from solvers.base import QueensSolver
 
-class BacktrackSolver:
+class BacktrackSolver(QueensSolver):
     def __init__(self, board):
-        self.board = board
-        self.n = len(board)
+        super().__init__(board)
         self.solution = [[0 for _ in range(self.n)] for _ in range(self.n)]
         self.regions_used = [False] * self.n
         self.rows_used = [False] * self.n
@@ -72,20 +72,38 @@ class BacktrackSolver:
             None if no solution exists.
         """
 
-        print("Solving the queens puzzle with backtracking...")
-        if self.backtrack(0):
-            return self.solution
-        else:
-            return None
+        if not self.backtrack(0):
+            self.solution = None
+        return self.solution
 
-    def print_solution(self):
-        """Pretty print the final solution"""
-        if self.solution is None:
-            print("No solution exists.")
-            return
-        
-        for row in self.solution:
-            print(' '.join('Q' if cell == 1 else '.' for cell in row))
+class RowBacktrackSolver(QueensSolver):
+    """Backtracking that places one queen per row, so each placement is only tried once"""
+
+    def solve(self):
+        cols = []
+        used_cols, used_regions = set(), set()
+
+        def place(row):
+            if row == self.n:
+                return True
+            for col in range(self.n):
+                region = self.board[row][col]
+                # With one queen per row, a queen can only touch the queen in the row above
+                if col in used_cols or region in used_regions or (cols and abs(cols[-1] - col) == 1):
+                    continue
+                cols.append(col)
+                used_cols.add(col)
+                used_regions.add(region)
+                if place(row + 1):
+                    return True
+                cols.pop()
+                used_cols.remove(col)
+                used_regions.remove(region)
+            return False
+
+        if place(0):
+            self.solution = [[int(cols[row] == col) for col in range(self.n)] for row in range(self.n)]
+        return self.solution
 
 if __name__ == "__main__":
     test_boards = create_test_boards()

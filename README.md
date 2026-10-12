@@ -22,18 +22,24 @@ Additionally, the project includes puzzle generation capabilities and performanc
 
 ## File Structure
 
-- **Solvers:**
+- **Solvers (`solvers/`):**
+  - `base.py`: `QueensSolver` base class (input validation, shared interface) and `is_valid_solution`
   - `pycosat_solver.py`: Implementation of a Queens puzzle solver using the PycoSAT library
   - `cpsat_solver.py`: Implementation using Google's OR-Tools CP-SAT solver
-  - `backtrack_solver.py`: Implementation using traditional backtracking algorithm
+  - `backtrack_solver.py`: Naive backtracking, plus `RowBacktrackSolver` (one queen per row)
 
-- **Puzzle Generation:**
-  - `generate_puzzle.py`: Functions to generate valid Queens puzzles of various sizes
+- **Puzzle Generation (`generators/`):**
+  - `generate_puzzle.py`: Random regions, then random border moves until the solution is unique
+  - `solution_first.py`: Places a valid queen layout first, then breaks each second solution found
   - `puzzles/`: Directory containing pre-generated puzzles of different sizes (5x5 to 16x16)
 
-- **Evaluation:**
+- **Evaluation (`benchmarks/`):**
   - `evaluate_runtime.py`: Benchmarking code to compare the performance of different solvers
+  - `compare_generators.py`: Time to generate a unique puzzle with each generator
   - `figs/`: Directory containing performance comparison charts saved by evaluate_runtime.py
+
+- **Tests (`tests/`):**
+  - `test_queens.py`: Solver correctness, heuristic soundness and generator checks (run `pytest`)
 
 - **Initial Example:**
   - `examples.py`: Sample puzzle board that was initially used manually for testing.
@@ -134,40 +140,51 @@ The evaluation file benchmarks different solvers with the following functions:
    pip install -r requirements.txt
    ```
 
+## Quick Demo
+
+Run from the repository root with the virtual environment active:
+
+```
+python -m solvers.pycosat_solver          # solve the sample puzzle
+python -m generators.solution_first       # generate a unique 8x8 puzzle and show it
+pytest                                    # run the tests
+python -m benchmarks.evaluate_runtime --solvers PycosatSolver CpSatSolver RowBacktrackSolver --limit 20
+```
+
+The benchmark prints a summary table and saves charts to `figs/` (`execution_time_vs_size_log.png` is the main one).
+
 ## Running the Project
 
 ### Solving Puzzles:
 
-Run any of the solver scripts directly to test a sample puzzle:
+Run commands from the repository root. Run any solver module directly to test a sample puzzle:
 
 ```
-python backtrack_solver.py
-```
-```
-python pycosat_solver.py
-```
-```
-python cpsat_solver.py
+python -m solvers.backtrack_solver
+python -m solvers.pycosat_solver
+python -m solvers.cpsat_solver
 ```
 
 ### Generating Puzzles:
 
-To generate a puzzle and visualize the output, simply run:
+To generate a puzzle and visualize the output, run either generator:
 ```
-python generate_puzzle.py
+python -m generators.generate_puzzle
+python -m generators.solution_first
 ```
 
-To generate multiple puzzles and save the output to figs, put 
+To generate multiple puzzles and save the output to puzzles/, put 
 ```
 generate_multiple_puzzles(n, 100, 500)
 ```
-in the generate_puzzle.py file and run it (with your desired choice of n).
+in generators/generate_puzzle.py and run it (with your desired choice of n).
 
 ### Evaluation
 
-To evaluate the solvers, simply run:
 ```
-python evaluate_runtime.py
+python -m benchmarks.evaluate_runtime                      # all solvers; see --help for options
+python -m benchmarks.compare_generators --sizes 6,8,10,12
+pytest
 ```
 
 ## Dependencies
